@@ -1,0 +1,84 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Custom Paper Styling */
+.letter-paper {
+  background-color: #ffffff;
+  background-image: radial-gradient(#f1f5f9 0.75px, transparent 0.75px);
+  background-size: 16px 16px;
+  box-shadow: 0 10px 35px -5px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(15, 23, 42, 0.05);
+  transition: all 0.2s ease-in-out;
+}
+
+/* Smooth textarea auto-adjust */
+textarea {
+  resize: vertical;
+}
+
+/* Print Stylesheet */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    font-size: 12pt !important;
+  }
+
+  /* Hide everything on the page except the printable paper element */
+  header,
+  footer,
+  #hero-section,
+  #generator-form-col,
+  #preview-header-bar,
+  #preview-actions-bar,
+  #how-it-works-section,
+  #features-section,
+  #examples-section,
+  #faq-section,
+  .no-print {
+    display: none !important;
+  }
+
+  #letter-generator-section {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+  }
+
+  #letter-printable-paper {
+    display: block !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    background: transparent !important;
+    font-size: 12pt !important;
+    line-height: 1.6 !important;
+    color: #111827 !important;
+  }
+
+  #letter-printable-paper textarea {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    resize: none !important;
+    overflow: visible !important;
+    height: auto !important;
+    color: #111827 !important;
+    font-family: inherit !important;
+  }
+
+  @page {
+    margin: 20mm 20mm 20mm 20mm;
+    size: auto;
+  }
+}
