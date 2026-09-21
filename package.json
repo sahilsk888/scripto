@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Production-ready AI Letter Writing Web Application",
   "private": true,
+  "type": "module",
   "scripts": {
     "install:all": "npm install && npm install --prefix server && npm install --prefix client",
     "build": "npm run build --prefix client",
@@ -12,6 +13,13 @@
     "dev": "concurrently -n \"SERVER,CLIENT\" -c \"blue,magenta\" \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
     "dev:server": "npm run dev --prefix server",
     "dev:client": "npm run dev --prefix client"
+  },
+  "dependencies": {
+    "@google/genai": "^2.23.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "multer": "^2.4.0"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
