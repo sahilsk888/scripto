@@ -38,7 +38,21 @@ export default function LetterPreview({
     }
   };
 
-  // Handle Download as PDF (Issue 1)
+  // Helper to extract html2pdf callable function across various module bundling formats
+  const resolveHtml2Pdf = (mod) => {
+    if (typeof mod === 'function') return mod;
+    if (mod && typeof mod.default === 'function') return mod.default;
+    if (mod && mod.default && typeof mod.default.default === 'function') return mod.default.default;
+    if (mod && mod.h && typeof mod.h.default === 'function') return mod.h.default;
+    if (mod && mod.h && typeof mod.h === 'function') return mod.h;
+    for (const key of Object.keys(mod || {})) {
+      if (typeof mod[key] === 'function') return mod[key];
+      if (mod[key] && typeof mod[key].default === 'function') return mod[key].default;
+    }
+    return null;
+  };
+
+  // Handle Download as PDF
   const handleDownload = async () => {
     if (!letter || isDownloadingPdf) return;
 
@@ -46,28 +60,33 @@ export default function LetterPreview({
     try {
       setIsDownloadingPdf(true);
 
-      const html2pdfModule = await import('html2pdf.js');
-      const html2pdf = typeof html2pdfModule === 'function'
-        ? html2pdfModule
-        : (html2pdfModule.default || html2pdfModule);
+      // Ensure document web fonts are fully loaded for crisp rendering
+      if (document.fonts?.ready) {
+        await document.fonts.ready;
+      }
 
-      // Create a clean offscreen element with formal letter styles
+      const html2pdfModule = await import('html2pdf.js');
+      const html2pdf = resolveHtml2Pdf(html2pdfModule);
+
+      if (!html2pdf) {
+        throw new Error('PDF generator library could not be initialized.');
+      }
+
+      // Create a clean, formal letter document element
+      // Note: Must use in-flow positioning so html2canvas renders the content at (0, 0)
+      // html2pdf automatically clones this into its own hidden overlay (opacity: 0) during capture
       printContainer = document.createElement('div');
-      printContainer.style.position = 'fixed';
-      printContainer.style.left = '-9999px';
-      printContainer.style.top = '0';
-      printContainer.style.width = '700px';
-      printContainer.style.padding = '36px 40px';
+      printContainer.style.width = '100%';
+      printContainer.style.boxSizing = 'border-box';
+      printContainer.style.padding = '10px 15px';
       printContainer.style.backgroundColor = '#ffffff';
       printContainer.style.color = '#111827';
       printContainer.style.fontFamily = "Merriweather, Georgia, Cambria, 'Times New Roman', Times, serif";
-      printContainer.style.fontSize = '14px';
+      printContainer.style.fontSize = '12pt';
       printContainer.style.lineHeight = '1.7';
       printContainer.style.whiteSpace = 'pre-wrap';
       printContainer.style.wordBreak = 'break-word';
-
       printContainer.innerText = letter;
-      document.body.appendChild(printContainer);
 
       const opt = {
         margin: [15, 15, 15, 15],
@@ -84,7 +103,7 @@ export default function LetterPreview({
           format: 'a4',
           orientation: 'portrait'
         },
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+        pagebreak: { mode: ['css', 'legacy'] }
       };
 
       await html2pdf().set(opt).from(printContainer).save();
