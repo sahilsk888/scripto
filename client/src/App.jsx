@@ -175,80 +175,101 @@ export default function App() {
     }
   };
 
+  // Cleanup preview URL on unmount
+  useEffect(() => {
+    return () => {
+      if (referencePreviewUrl && referencePreviewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(referencePreviewUrl);
+      }
+    };
+  }, [referencePreviewUrl]);
+
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 selection:bg-brand-500 selection:text-white">
-      {/* Navigation Header */}
-      <Header />
+    <>
+      <div className="min-h-screen flex flex-col bg-slate-50 selection:bg-brand-500 selection:text-white no-print">
+        {/* Navigation Header */}
+        <Header />
 
-      <main className="flex-grow">
-        {/* Hero Section */}
-        <Hero
-          onGetStarted={() => {
-            const el = document.getElementById('letter-generator-section');
-            if (el) el.scrollIntoView({ behavior: 'smooth' });
-          }}
+        <main className="flex-grow">
+          {/* Hero Section */}
+          <Hero
+            onGetStarted={() => {
+              const el = document.getElementById('letter-generator-section');
+              if (el) el.scrollIntoView({ behavior: 'smooth' });
+            }}
+          />
+
+          {/* Generator Section (Hero Feature) */}
+          <section
+            id="letter-generator-section"
+            className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 scroll-mt-24"
+          >
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              {/* Left Column: Generator Form (5 cols on lg) */}
+              <div className="lg:col-span-5">
+                <LetterForm
+                  formData={formData}
+                  onChange={setFormData}
+                  onSubmit={handleGenerate}
+                  onReset={handleReset}
+                  isLoading={isLoading}
+                  error={error}
+                  onOpenAddSection={() => setIsAddSectionOpen(true)}
+                  referenceImage={referenceImage}
+                  referencePreviewUrl={referencePreviewUrl}
+                  onRemoveReferenceImage={handleRemoveReferenceImage}
+                  onGenerateFromImage={handleGenerateFromImage}
+                />
+              </div>
+
+              {/* Right Column: Letter Document Preview (7 cols on lg) */}
+              <div className="lg:col-span-7">
+                <LetterPreview
+                  letter={generatedLetter}
+                  isLoading={isLoading}
+                  isImageReference={isImageLoading}
+                  onLetterChange={setGeneratedLetter}
+                  onRegenerate={referenceImage ? handleGenerateFromImage : handleGenerate}
+                  onNewLetter={handleReset}
+                />
+              </div>
+            </div>
+          </section>
+
+          {/* How It Works */}
+          <HowItWorks />
+
+          {/* Features Showcase */}
+          <Features />
+
+          {/* Example Presets */}
+          <ExampleLetters onSelectExample={handleSelectExample} />
+
+          {/* FAQ Section */}
+          <FaqSection />
+        </main>
+
+        {/* Footer */}
+        <Footer />
+
+        {/* Modal: Add Reference Image (Camera / Upload) */}
+        <AddSectionModal
+          isOpen={isAddSectionOpen}
+          onClose={() => setIsAddSectionOpen(false)}
+          onImageSelected={handleImageSelected}
         />
+      </div>
 
-        {/* Generator Section (Hero Feature) */}
-        <section
-          id="letter-generator-section"
-          className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 scroll-mt-24"
-        >
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            {/* Left Column: Generator Form (5 cols on lg) */}
-            <div className="lg:col-span-5">
-              <LetterForm
-                formData={formData}
-                onChange={setFormData}
-                onSubmit={handleGenerate}
-                onReset={handleReset}
-                isLoading={isLoading}
-                error={error}
-                onOpenAddSection={() => setIsAddSectionOpen(true)}
-                referenceImage={referenceImage}
-                referencePreviewUrl={referencePreviewUrl}
-                onRemoveReferenceImage={handleRemoveReferenceImage}
-                onGenerateFromImage={handleGenerateFromImage}
-              />
-            </div>
-
-            {/* Right Column: Letter Document Preview (7 cols on lg) */}
-            <div className="lg:col-span-7">
-              <LetterPreview
-                letter={generatedLetter}
-                isLoading={isLoading}
-                isImageReference={isImageLoading}
-                onLetterChange={setGeneratedLetter}
-                onRegenerate={referenceImage ? handleGenerateFromImage : handleGenerate}
-                onNewLetter={handleReset}
-              />
-            </div>
+      {/* Dedicated Print-Only Document Container (Issue 2) */}
+      {generatedLetter && (
+        <div id="print-root" className="print-only">
+          <div className="print-letter-content">
+            {generatedLetter}
           </div>
-        </section>
-
-        {/* How It Works */}
-        <HowItWorks />
-
-        {/* Features Showcase */}
-        <Features />
-
-        {/* Example Presets */}
-        <ExampleLetters onSelectExample={handleSelectExample} />
-
-        {/* FAQ Section */}
-        <FaqSection />
-      </main>
-
-      {/* Footer */}
-      <Footer />
-
-      {/* Modal: Add Reference Image (Camera / Upload) */}
-      <AddSectionModal
-        isOpen={isAddSectionOpen}
-        onClose={() => setIsAddSectionOpen(false)}
-        onImageSelected={handleImageSelected}
-      />
-    </div>
+        </div>
+      )}
+    </>
   );
 }
+
 

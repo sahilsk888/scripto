@@ -22,59 +22,61 @@ textarea {
   resize: vertical;
 }
 
-/* Print Stylesheet */
-@media print {
-  body {
-    background: #ffffff !important;
-    color: #000000 !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    font-size: 12pt !important;
-  }
+/* Screen-only & Print-only helpers */
+.print-only {
+  display: none !important;
+}
 
-  /* Hide everything on the page except the printable paper element */
+/* Print Stylesheet (Issue 2) */
+@media print {
+  /* Complete suppression of all website UI */
+  .no-print,
   header,
   footer,
-  #hero-section,
-  #generator-form-col,
-  #preview-header-bar,
-  #preview-actions-bar,
+  nav,
+  aside,
+  #home,
+  #letter-generator-section,
   #how-it-works-section,
   #features-section,
   #examples-section,
-  #faq-section,
-  .no-print {
+  #faq-section {
     display: none !important;
   }
 
-  #letter-generator-section {
-    padding: 0 !important;
-    margin: 0 !important;
-    max-width: 100% !important;
-  }
-
-  #letter-printable-paper {
-    display: block !important;
-    box-shadow: none !important;
-    border: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    width: 100% !important;
-    background: transparent !important;
-    font-size: 12pt !important;
-    line-height: 1.6 !important;
+  html, body {
+    background: #ffffff !important;
     color: #111827 !important;
-  }
-
-  #letter-printable-paper textarea {
-    border: none !important;
-    box-shadow: none !important;
     padding: 0 !important;
-    resize: none !important;
+    margin: 0 !important;
     overflow: visible !important;
     height: auto !important;
+    font-size: 11pt !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Make dedicated print container visible at top of page */
+  #print-root.print-only,
+  .print-only {
+    display: block !important;
+    visibility: visible !important;
+    position: static !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+  }
+
+  .print-letter-content {
+    font-family: 'Merriweather', Georgia, Cambria, 'Times New Roman', Times, serif !important;
+    font-size: 11pt !important;
+    line-height: 1.65 !important;
     color: #111827 !important;
-    font-family: inherit !important;
+    white-space: pre-wrap !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    background: #ffffff !important;
   }
 
   @page {
@@ -82,3 +84,4 @@ textarea {
     size: auto;
   }
 }
+

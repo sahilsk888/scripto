@@ -23,6 +23,7 @@ export default function AddSectionModal({ isOpen, onClose, onImageSelected }) {
   const [uploadError, setUploadError] = useState(null);
   const [showLightbox, setShowLightbox] = useState(false);
 
+  const isConfirmedRef = useRef(false);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -44,9 +45,10 @@ export default function AddSectionModal({ isOpen, onClose, onImageSelected }) {
   // Reset modal state
   const resetState = () => {
     stopCameraStream();
-    if (previewUrl && previewUrl.startsWith('blob:')) {
+    if (previewUrl && previewUrl.startsWith('blob:') && !isConfirmedRef.current) {
       URL.revokeObjectURL(previewUrl);
     }
+    isConfirmedRef.current = false;
     setMode('select');
     setCameraError(null);
     setUploadError(null);
@@ -70,7 +72,7 @@ export default function AddSectionModal({ isOpen, onClose, onImageSelected }) {
     }
     return () => {
       stopCameraStream();
-      if (previewUrl && previewUrl.startsWith('blob:')) {
+      if (previewUrl && previewUrl.startsWith('blob:') && !isConfirmedRef.current) {
         URL.revokeObjectURL(previewUrl);
       }
     };
@@ -138,6 +140,9 @@ export default function AddSectionModal({ isOpen, onClose, onImageSelected }) {
           setCameraError('Failed to capture image. Please try again.');
           return;
         }
+        if (previewUrl && previewUrl.startsWith('blob:')) {
+          URL.revokeObjectURL(previewUrl);
+        }
         const file = new File([blob], `photo_${Date.now()}.jpg`, { type: 'image/jpeg' });
         const objectUrl = URL.createObjectURL(blob);
         setSelectedFile(file);
@@ -189,6 +194,10 @@ export default function AddSectionModal({ isOpen, onClose, onImageSelected }) {
       return;
     }
 
+    if (previewUrl && previewUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(previewUrl);
+    }
+
     const objectUrl = URL.createObjectURL(file);
     setSelectedFile(file);
     setPreviewUrl(objectUrl);
@@ -198,7 +207,8 @@ export default function AddSectionModal({ isOpen, onClose, onImageSelected }) {
 
   // Confirm image selection
   const handleConfirmImage = () => {
-    if (!selectedFile) return;
+    if (!selectedFile || !previewUrl) return;
+    isConfirmedRef.current = true;
     onImageSelected(selectedFile, previewUrl);
     // Modal will close, stream will be cleaned up
     stopCameraStream();
@@ -213,6 +223,7 @@ export default function AddSectionModal({ isOpen, onClose, onImageSelected }) {
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-title"
+      onClick={handleClose}
     >
       <div
         className="bg-white rounded-2xl border border-slate-200/90 shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh] transition-all transform animate-scaleUp"

@@ -9,7 +9,8 @@ import {
   PlusCircle,
   FileText,
   Eye,
-  Sparkles
+  Sparkles,
+  Loader2
 } from 'lucide-react';
 import LoadingState from './LoadingState';
 
@@ -23,6 +24,7 @@ export default function LetterPreview({
 }) {
   const [copied, setCopied] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
 
   // Handle Copy to clipboard
   const handleCopy = async () => {
@@ -36,24 +38,68 @@ export default function LetterPreview({
     }
   };
 
-  // Handle Download as letter.txt
-  const handleDownload = () => {
-    if (!letter) return;
-    const element = document.createElement('a');
-    const file = new Blob([letter], { type: 'text/plain;charset=utf-8' });
-    element.href = URL.createObjectURL(file);
-    element.download = 'letter.txt';
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
-    URL.revokeObjectURL(element.href);
+  // Handle Download as PDF (Issue 1)
+  const handleDownload = async () => {
+    if (!letter || isDownloadingPdf) return;
+
+    try {
+      setIsDownloadingPdf(true);
+
+      const html2pdfModule = await import('html2pdf.js');
+      const html2pdf = html2pdfModule.default || html2pdfModule;
+
+      // Create a clean offscreen element with formal letter styles
+      const printContainer = document.createElement('div');
+      printContainer.style.position = 'fixed';
+      printContainer.style.left = '-9999px';
+      printContainer.style.top = '0';
+      printContainer.style.width = '700px';
+      printContainer.style.padding = '36px 40px';
+      printContainer.style.backgroundColor = '#ffffff';
+      printContainer.style.color = '#111827';
+      printContainer.style.fontFamily = "Merriweather, Georgia, Cambria, 'Times New Roman', Times, serif";
+      printContainer.style.fontSize = '14px';
+      printContainer.style.lineHeight = '1.7';
+      printContainer.style.whiteSpace = 'pre-wrap';
+      printContainer.style.wordBreak = 'break-word';
+
+      printContainer.innerText = letter;
+      document.body.appendChild(printContainer);
+
+      const opt = {
+        margin: [15, 15, 15, 15],
+        filename: 'SCRIPTO-Letter.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          letterRendering: true,
+          logging: false
+        },
+        jsPDF: {
+          unit: 'mm',
+          format: 'a4',
+          orientation: 'portrait'
+        },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+      };
+
+      await html2pdf().set(opt).from(printContainer).save();
+
+      document.body.removeChild(printContainer);
+    } catch (err) {
+      console.error('Failed to generate PDF:', err);
+    } finally {
+      setIsDownloadingPdf(false);
+    }
   };
 
-  // Handle Print letter
+  // Handle Print letter (Issue 2)
   const handlePrint = () => {
     if (!letter) return;
     window.print();
   };
+
 
   // Empty State
   if (!isLoading && !letter) {
@@ -154,15 +200,25 @@ export default function LetterPreview({
             )}
           </button>
 
-          {/* Download Button */}
+          {/* Download Button (PDF) */}
           <button
             type="button"
             onClick={handleDownload}
-            className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-all flex items-center gap-1.5"
-            title="Download as letter.txt"
+            disabled={isDownloadingPdf}
+            className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-all flex items-center gap-1.5 disabled:opacity-60 cursor-pointer"
+            title="Download letter as PDF"
           >
-            <Download className="w-3.5 h-3.5 text-slate-500" />
-            <span>Download</span>
+            {isDownloadingPdf ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 text-brand-600 animate-spin" />
+                <span>PDF...</span>
+              </>
+            ) : (
+              <>
+                <Download className="w-3.5 h-3.5 text-slate-500" />
+                <span>Download</span>
+              </>
+            )}
           </button>
 
           {/* Print Button */}

@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
-import { X, ZoomIn } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { X } from 'lucide-react';
 
 /**
  * Clean fullscreen / lightbox preview modal for inspecting reference images.
@@ -33,10 +34,13 @@ export default function ImageLightboxModal({ isOpen, imageUrl, alt = 'Reference 
 
   if (!isOpen || !imageUrl) return null;
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-6 bg-slate-950/85 backdrop-blur-xs transition-opacity duration-200 animate-fadeIn"
-      onClick={onClose}
+      className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 bg-slate-950/85 backdrop-blur-xs transition-opacity duration-200 animate-fadeIn"
+      onClick={(e) => {
+        e.stopPropagation();
+        onClose();
+      }}
       role="dialog"
       aria-modal="true"
       aria-label="Enlarged image preview"
@@ -73,6 +77,8 @@ export default function ImageLightboxModal({ isOpen, imageUrl, alt = 'Reference 
           </span>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
+
