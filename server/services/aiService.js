@@ -203,7 +203,7 @@ export async function generateLetterFromImageWithAI({
   const ai = new GoogleGenAI({ apiKey });
 
   const primaryModel = process.env.GEMINI_MODEL || 'gemini-3.6-flash';
-  const candidateModels = [primaryModel, 'gemini-3.6-flash', 'gemini-flash-latest'].filter(
+  const candidateModels = [primaryModel, 'gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-flash-latest'].filter(
     (model, index, self) => self.indexOf(model) === index
   );
 

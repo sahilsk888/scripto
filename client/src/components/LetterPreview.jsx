@@ -42,14 +42,17 @@ export default function LetterPreview({
   const handleDownload = async () => {
     if (!letter || isDownloadingPdf) return;
 
+    let printContainer = null;
     try {
       setIsDownloadingPdf(true);
 
       const html2pdfModule = await import('html2pdf.js');
-      const html2pdf = html2pdfModule.default || html2pdfModule;
+      const html2pdf = typeof html2pdfModule === 'function'
+        ? html2pdfModule
+        : (html2pdfModule.default || html2pdfModule);
 
       // Create a clean offscreen element with formal letter styles
-      const printContainer = document.createElement('div');
+      printContainer = document.createElement('div');
       printContainer.style.position = 'fixed';
       printContainer.style.left = '-9999px';
       printContainer.style.top = '0';
@@ -85,11 +88,12 @@ export default function LetterPreview({
       };
 
       await html2pdf().set(opt).from(printContainer).save();
-
-      document.body.removeChild(printContainer);
     } catch (err) {
       console.error('Failed to generate PDF:', err);
     } finally {
+      if (printContainer && printContainer.parentNode) {
+        printContainer.parentNode.removeChild(printContainer);
+      }
       setIsDownloadingPdf(false);
     }
   };
